@@ -1,18 +1,29 @@
-import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from datetime import datetime
 
 cn = pd.read_csv("data/cryptonews.csv")
 bp = pd.read_csv("data/btc.csv")
-# print(bp["date"][])
-data = []
 
-for x in [cn["date"][0], cn["date"][1]]:
-    data.append(int(datetime.strptime(x.split()[0], "%Y-%m-%d").timestamp()))
+cn["date"] = pd.to_datetime(cn["date"], format='mixed', errors='coerce').dt.date
 
-print(data)
+bp["Date"] = pd.to_datetime(bp["Date"]).dt.date
 
-# figure=plt.figure(figsize=(8,8))
-# height, _, _ = plt.hist(data, 25, density=True)
-# plt.show()
+start_date = cn["date"].min()
+end_date = cn["date"].max()
+
+bp_filtered = bp[(bp["Date"] >= start_date) & (bp["Date"] <= end_date)]
+
+
+fig, ax1 = plt.subplots(figsize=(10, 6))
+
+ax1.hist(cn["date"], bins=26, alpha=0.6,)
+ax1.set_xlabel('Date')
+ax1.set_ylabel("Amount of News Articles")
+
+ax2 = ax1.twinx()
+ax2.plot(bp_filtered["Date"], bp_filtered["Open"], color="orange")
+ax2.set_ylabel("BTC Price")
+
+fig.tight_layout()
+
+plt.show()
